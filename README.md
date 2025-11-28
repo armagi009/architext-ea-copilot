@@ -1,6 +1,6 @@
 # Architext — EA Copilot
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/armagi009/architext-ea-copilot)
 
 Architext is an AI-native Enterprise Architecture (EA) Copilot that transforms McKinsey-grade EA consulting workflows into an intelligent, edge-deployed assistant. Built on Cloudflare Workers and Durable Objects, it guides users through the four core EA lifecycle phases: **Discover & Align**, **Design & Simulate**, **Plan & Orchestrate**, and **Operate & Learn**. 
 
@@ -110,7 +110,7 @@ The app will be available at your Worker URL (e.g., `https://architext-ea-copilo
 
 For custom domains or advanced configs, edit `wrangler.jsonc` (migrations for Durable Objects are pre-configured).
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/armagi009/architext-ea-copilot)
 
 ## Contributing
 
