@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrainCircuit, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';

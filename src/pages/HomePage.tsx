@@ -1,148 +1,120 @@
-// Home page of the app, Currently a demo page for demonstration.
-// Please rewrite this file to implement your own logic. Do not replace or delete it, simply rewrite this HomePage.tsx file.
-import { useEffect } from 'react'
-import { Sparkles } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { Toaster, toast } from '@/components/ui/sonner'
-import { create } from 'zustand'
-import { useShallow } from 'zustand/react/shallow'
-import { AppLayout } from '@/components/layout/AppLayout'
-
-// Timer store: independent slice with a clear, minimal API, for demonstration
-type TimerState = {
-  isRunning: boolean;
-  elapsedMs: number;
-  start: () => void;
-  pause: () => void;
-  reset: () => void;
-  tick: (deltaMs: number) => void;
-}
-
-const useTimerStore = create<TimerState>((set) => ({
-  isRunning: false,
-  elapsedMs: 0,
-  start: () => set({ isRunning: true }),
-  pause: () => set({ isRunning: false }),
-  reset: () => set({ elapsedMs: 0, isRunning: false }),
-  tick: (deltaMs) => set((s) => ({ elapsedMs: s.elapsedMs + deltaMs })),
-}))
-
-// Counter store: separate slice to showcase multiple stores without coupling
-type CounterState = {
-  count: number;
-  inc: () => void;
-  reset: () => void;
-}
-
-const useCounterStore = create<CounterState>((set) => ({
-  count: 0,
-  inc: () => set((s) => ({ count: s.count + 1 })),
-  reset: () => set({ count: 0 }),
-}))
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowRight, BarChart3, BrainCircuit, FilePlus2, LayoutTemplate } from 'lucide-react';
+import { EAHeader } from '@/components/EAHeader';
+import { FooterNote } from '@/components/FooterNote';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Toaster } from '@/components/ui/sonner';
+const kpiData = [
+  { title: 'Time to Brief', value: '4 hrs', change: '-82%', changeType: 'positive' },
+  { title: 'Evidence Coverage', value: '91%', change: '+15%', changeType: 'positive' },
+  { title: 'Est. Cost Delta', value: '-18%', change: '-5%', changeType: 'positive' },
+];
+const actionCards = [
+  {
+    icon: FilePlus2,
+    title: 'New Intake',
+    description: 'Start a new engagement by ingesting documents and context.',
+    link: '/intake',
+    color: 'text-primary',
+  },
+  {
+    icon: LayoutTemplate,
+    title: 'Design Canvas',
+    description: 'Generate and simulate multi-option target architectures.',
+    link: '/design',
+    color: 'text-accent',
+  },
+  {
+    icon: BarChart3,
+    title: 'View Roadmap',
+    description: 'Plan and orchestrate your transformation portfolio.',
+    link: '#',
+    color: 'text-blue-500',
+  },
+];
 export function HomePage() {
-  // Select only what is needed to avoid unnecessary re-renders
-  const { isRunning, elapsedMs } = useTimerStore(
-    useShallow((s) => ({ isRunning: s.isRunning, elapsedMs: s.elapsedMs })),
-  )
-  const start = useTimerStore((s) => s.start)
-  const pause = useTimerStore((s) => s.pause)
-  const resetTimer = useTimerStore((s) => s.reset)
-  const count = useCounterStore((s) => s.count)
-  const inc = useCounterStore((s) => s.inc)
-  const resetCount = useCounterStore((s) => s.reset)
-
-  // Drive the timer only while running; avoid update-depth issues with a scoped RAF
-  useEffect(() => {
-    if (!isRunning) return
-    let raf = 0
-    let last = performance.now()
-    const loop = () => {
-      const now = performance.now()
-      const delta = now - last
-      last = now
-      // Read store API directly to keep effect deps minimal and stable
-      useTimerStore.getState().tick(delta)
-      raf = requestAnimationFrame(loop)
-    }
-    raf = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(raf)
-  }, [isRunning])
-
-  const onPleaseWait = () => {
-    inc()
-    if (!isRunning) {
-      start()
-      toast.success('Building your app…', {
-        description: 'Hang tight, we\'re setting everything up.',
-      })
-    } else {
-      pause()
-      toast.info('Taking a short pause', {
-        description: 'We\'ll continue shortly.',
-      })
-    }
-  }
-
-  const formatted = formatDuration(elapsedMs)
-
   return (
-    <AppLayout>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-        <ThemeToggle />
-        <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-        <div className="text-center space-y-8 relative z-10 animate-fade-in">
-          <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-              <Sparkles className="w-8 h-8 text-white rotating" />
-            </div>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button 
-              size="lg"
-              onClick={onPleaseWait}
-              className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-              aria-live="polite"
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="noise-bg"></div>
+      <EAHeader />
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-16 md:py-24 lg:py-32 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
             >
-              Please Wait
-            </Button>
+              <BrainCircuit className="mx-auto h-16 w-16 text-gradient-ea" />
+              <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-balance">
+                Your Enterprise Architecture <span className="text-gradient-ea">Copilot</span>
+              </h1>
+              <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground">
+                Turn McKinsey-grade EA workflows into an AI-native assistant. Discover, design, plan, and operate with evidence-backed confidence.
+              </p>
+              <div className="mt-8 flex justify-center gap-4">
+                <Link to="/intake">
+                  <Button size="lg">
+                    Start New Intake <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button size="lg" variant="outline">
+                  Load Engagement
+                </Button>
+              </div>
+            </motion.div>
           </div>
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div>
-              Time elapsed: <span className="font-medium tabular-nums text-foreground">{formatted}</span>
+          <div className="pb-16 md:pb-24 lg:pb-32">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              {kpiData.map((kpi) => (
+                <Card key={kpi.title}>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{kpi.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{kpi.value}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <span className={kpi.changeType === 'positive' ? 'text-green-500' : 'text-red-500'}>
+                        {kpi.change}
+                      </span>{' '}
+                      from last month
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </motion.div>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+              {actionCards.map((action, i) => (
+                <motion.div
+                  key={action.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
+                >
+                  <Link to={action.link} className="block h-full">
+                    <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/50">
+                      <CardHeader>
+                        <action.icon className={`h-8 w-8 mb-2 ${action.color}`} />
+                        <CardTitle>{action.title}</CardTitle>
+                        <CardDescription>{action.description}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
-            <div>
-              Coins: <span className="font-medium tabular-nums text-foreground">{count}</span>
-            </div>
-          </div>
-          <div className="flex justify-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { resetTimer(); resetCount(); toast('Reset complete') }}>
-              Reset
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => { inc(); toast('Coin added') }}>
-              Add Coin
-            </Button>
           </div>
         </div>
-        <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-          <p>Powered by Cloudflare</p>
-        </footer>
-        <Toaster richColors closeButton />
-      </div>
-    </AppLayout>
-  )
+      </main>
+      <FooterNote />
+      <Toaster richColors />
+    </div>
+  );
 }
