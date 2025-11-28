@@ -77,7 +77,12 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [];
+    const commands = [
+    "bun add reactflow@^11.10.4",
+    "bun add react-dropzone@^14.2.3",
+    "bun add @tanstack/react-table@^8.20.5",
+    "bun add @tanstack/react-virtual@^3.6.6"
+];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
