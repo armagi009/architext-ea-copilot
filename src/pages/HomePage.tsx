@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, BarChart3, BrainCircuit, FilePlus2, LayoutTemplate, Share2 } from 'lucide-react';
+import { ArrowRight, BarChart3, BrainCircuit, FilePlus2, LayoutTemplate, Share2, Map, AlertCircle } from 'lucide-react';
 import { EAHeader } from '@/components/EAHeader';
 import { FooterNote } from '@/components/FooterNote';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,20 @@ const actionCards = [
     description: 'Explore the canonical graph of your enterprise architecture.',
     link: '/graph',
     color: 'text-purple-500',
+  },
+  {
+    icon: Map,
+    title: 'Roadmap',
+    description: 'Build and orchestrate transformation plans.',
+    link: '/roadmap',
+    color: 'text-indigo-500',
+  },
+  {
+    icon: AlertCircle,
+    title: 'Ops Console',
+    description: 'Monitor health and learn from incidents.',
+    link: '/ops',
+    color: 'text-red-500',
   },
 ];
 export function HomePage() {
@@ -90,7 +104,7 @@ export function HomePage() {
                 </Card>
               ))}
             </motion.div>
-            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {actionCards.map((action, i) => (
                 <motion.div
                   key={action.title}
