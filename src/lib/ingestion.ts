@@ -11,16 +11,6 @@ const mockJiraData = {
     { key: "PHX-2", summary: "Integrate Salesforce with ERP" },
   ],
 };
-const mockAwsData = {
-  instances: [
-    { id: 'i-12345', type: 't3.large', state: 'running', tags: { Name: 'sap-app-server' } },
-    { id: 'i-67890', type: 'r5.xlarge', state: 'running', tags: { Name: 'sap-db-server' } },
-  ],
-  s3Buckets: [
-    { name: 'phoenix-prod-backups', publicAccess: 'Blocked' },
-    { name: 'phoenix-public-assets', publicAccess: 'Enabled' },
-  ]
-};
 // Simple text parser to generate graph nodes and edges
 export const parseTextToGraph = (text: string, source: string): { nodes: Node[], edges: Edge[] } => {
   const nodes: Node[] = [];
@@ -45,7 +35,7 @@ export const parseTextToGraph = (text: string, source: string): { nodes: Node[],
     edges.push({ id: `e-${cap.id}-${app.id}`, source: cap.id, target: app.id, animated: true });
   }
   if (text.toLowerCase().includes('aws') || text.toLowerCase().includes('ec2')) {
-    const app = found.get('app_sap') || addNode('app_generic', 'Cloud Workload', 'App', {});
+    const app = found.get('app_sap');
     const infra = addNode('infra_aws', 'AWS EC2', 'Infra', {});
     if (app) {
       edges.push({ id: `e-${app.id}-${infra.id}`, source: app.id, target: infra.id });
@@ -85,10 +75,4 @@ export const ingestFromJira = async (projectKey: string) => {
   await new Promise(res => setTimeout(res, 1000));
   const combinedText = mockJiraData.epics.map(e => e.summary).join('\n');
   return parseTextToGraph(combinedText, "Jira");
-};
-export const ingestFromAWS = async () => {
-  toast.info(`Simulating ingest from AWS API...`);
-  await new Promise(res => setTimeout(res, 1500));
-  const combinedText = `AWS resources found: ${mockAwsData.instances.length} EC2 instances and ${mockAwsData.s3Buckets.length} S3 buckets.`;
-  return parseTextToGraph(combinedText, "AWS API");
 };

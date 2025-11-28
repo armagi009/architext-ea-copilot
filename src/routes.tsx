@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { HomePage } from '@/pages/HomePage';
 import IntakePage from '@/pages/IntakePage';
 import DesignCanvas from '@/pages/DesignCanvas';
+import CanonicalModelPage from '@/pages/CanonicalModelPage';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,11 @@ export const router = createBrowserRouter([
   {
     path: "/design",
     element: <DesignCanvas />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/graph",
+    element: <CanonicalModelPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

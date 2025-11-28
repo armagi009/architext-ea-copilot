@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bot, FileText, Loader2, Send, Sparkles, User, XCircle } from 'lucide-react';
+import { Bot, FileText, Loader2, Send, Sparkles, User, XCircle, Share2 } from 'lucide-react';
 import { EAHeader } from '@/components/EAHeader';
 import { FooterNote } from '@/components/FooterNote';
 import { IntakePanel } from '@/components/IntakePanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { chatService } from '@/lib/chat';
 import { buildIntakePrompt } from '@/lib/ea-prompts';
 import { toast } from 'sonner';
+import { useGraphActions } from '@/lib/graphStore';
+import { readFileAsText, parseTextToGraph } from '@/lib/ingestion';
 interface BriefData {
   brief: string;
   kpis: string[];
@@ -25,6 +27,8 @@ export default function IntakePage() {
   const [streamingMessage, setStreamingMessage] = useState('');
   const [briefData, setBriefData] = useState<BriefData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [graphGenerated, setGraphGenerated] = useState(false);
+  const { setGraphData } = useGraphActions();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -41,28 +45,29 @@ export default function IntakePage() {
     setBriefData(null);
     setError(null);
     setStreamingMessage('');
-    const fileReadPromises = data.files.map(file => {
-      return new Promise<{ name: string; content: string }>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve({ name: file.name, content: e.target?.result as string });
-        reader.onerror = (e) => reject(e);
-        reader.readAsText(file);
-      });
-    });
+    setGraphGenerated(false);
+    const fileReadPromises = data.files.map(file => readFileAsText(file).then(content => ({ name: file.name, content })));
     try {
       const fileSnippets = await Promise.all(fileReadPromises);
       const prompt = buildIntakePrompt({ ...data, fileSnippets });
-      // Create a new session for this intake
       chatService.newSession();
       await chatService.createSession(data.engagementName, chatService.getSessionId());
+      let finalMessage = '';
       await chatService.sendMessage(prompt, undefined, (chunk) => {
+        finalMessage += chunk;
         setStreamingMessage(prev => prev + chunk);
       });
-      // After streaming, parse the final message
-      const finalMessage = streamingMessage;
+      setStreamingMessage(''); // Clear streaming message once done
       try {
         const parsedData = JSON.parse(finalMessage);
         setBriefData(parsedData);
+        toast.success("Engagement brief generated successfully!");
+        // Post-brief generation: create canonical model
+        const allText = fileSnippets.map(f => f.content).join('\n');
+        const { nodes, edges } = parseTextToGraph(allText, "Uploaded Documents");
+        setGraphData(nodes, edges);
+        setGraphGenerated(true);
+        toast.info("Preliminary canonical model generated.");
       } catch (parseError) {
         console.error("Failed to parse AI response:", parseError, "Response:", finalMessage);
         setError("The AI returned a response in an unexpected format. Please try again.");
@@ -73,7 +78,6 @@ export default function IntakePage() {
       toast.error("Ingestion failed.");
     } finally {
       setIsProcessing(false);
-      setStreamingMessage('');
     }
   };
   return (
@@ -87,7 +91,7 @@ export default function IntakePage() {
                 <IntakePanel onIngest={handleIngest} isProcessing={isProcessing} />
               </div>
               <div className="lg:col-span-7 xl:col-span-8">
-                <Card className="h-full flex flex-col">
+                <Card className="h-full flex flex-col min-h-[70vh]">
                   <CardHeader>
                     <CardTitle>2. AI-Generated Brief</CardTitle>
                   </CardHeader>
@@ -105,7 +109,7 @@ export default function IntakePage() {
                           </motion.div>
                         )}
                       </AnimatePresence>
-                      {isProcessing && (
+                      {isProcessing && !streamingMessage && (
                         <div className="flex items-center gap-4 p-4">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                           <div>
@@ -147,7 +151,17 @@ export default function IntakePage() {
                                 ))}
                               </div>
                             </div>
-                            <Button>Approve Brief</Button>
+                            <div className="flex gap-2">
+                                <Button>Approve Brief</Button>
+                                <Button variant="outline" className="gap-1">
+                                    <Share2 className="h-4 w-4" /> Share
+                                </Button>
+                                {graphGenerated && (
+                                    <Link to="/graph">
+                                        <Button variant="secondary">View Canonical Model</Button>
+                                    </Link>
+                                )}
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>

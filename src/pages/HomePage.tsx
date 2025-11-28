@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, BarChart3, BrainCircuit, FilePlus2, LayoutTemplate } from 'lucide-react';
+import { ArrowRight, BarChart3, BrainCircuit, FilePlus2, LayoutTemplate, Share2 } from 'lucide-react';
 import { EAHeader } from '@/components/EAHeader';
 import { FooterNote } from '@/components/FooterNote';
 import { Button } from '@/components/ui/button';
@@ -27,11 +27,11 @@ const actionCards = [
     color: 'text-accent',
   },
   {
-    icon: BarChart3,
-    title: 'View Roadmap',
-    description: 'Plan and orchestrate your transformation portfolio.',
-    link: '#',
-    color: 'text-blue-500',
+    icon: Share2,
+    title: 'View Model',
+    description: 'Explore the canonical graph of your enterprise architecture.',
+    link: '/graph',
+    color: 'text-purple-500',
   },
 ];
 export function HomePage() {
