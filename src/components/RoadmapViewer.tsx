@@ -1,13 +1,14 @@
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import React from 'react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Flag, AlertTriangle } from 'lucide-react';
+import { GripVertical, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
-import { useRoadmapStore, useRoadmapActions } from '@/lib/roadmapStore';
+import { useRoadmapStore, useRoadmapActions, Initiative } from '@/lib/roadmapStore';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-const SortableItem = ({ initiative }: { initiative: any }) => {
+const SortableItem = ({ initiative }: { initiative: Initiative }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: initiative.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
@@ -22,7 +23,7 @@ const SortableItem = ({ initiative }: { initiative: any }) => {
         <Badge variant={initiative.risk === 'High' ? 'destructive' : 'secondary'}>{initiative.risk}</Badge>
       </TableCell>
       <TableCell>
-        {initiative.isCompliant ? null : <AlertTriangle className="h-5 w-5 text-yellow-500" title="Policy non-compliant" />}
+        {initiative.isCompliant ? null : <AlertTriangle className="h-5 w-5 text-yellow-500" />}
       </TableCell>
     </TableRow>
   );
@@ -31,9 +32,9 @@ export function RoadmapViewer() {
   const initiatives = useRoadmapStore((s) => s.initiatives);
   const { setInitiatives } = useRoadmapActions();
   const sensors = useSensors(useSensor(PointerSensor));
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id !== over.id) {
+    if (over && active.id !== over.id) {
       const oldIndex = initiatives.findIndex((i) => i.id === active.id);
       const newIndex = initiatives.findIndex((i) => i.id === over.id);
       setInitiatives(arrayMove(initiatives, oldIndex, newIndex));
@@ -88,7 +89,7 @@ export function RoadmapViewer() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => `$${value}k`} />
+              <Tooltip formatter={(value: number) => `$${value}k`} />
               <Legend />
               <Bar dataKey="cost" fill="hsl(var(--primary))" name="Budget ($k)" />
             </BarChart>
